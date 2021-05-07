@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -50,12 +51,25 @@ func (this *Server) Start() {
 func (this *Server) Handler(conn net.Conn) {
 	fmt.Println("链接建立成功")
 	//上线用户加入广播
-	user := NewUser(conn)
-	this.MapLock.Lock()
-	this.OnlineMap[user.Name] = user
-	this.MapLock.Unlock()
+	user := NewUser(conn, this)
 	//推送上线消息
-	this.BroadCast(user, "已上线")
+	user.UserOnline()
+	//接受客户端发送的消息
+	go func() {
+		buf := make([]byte, 4655)
+		for {
+			r, err := conn.Read(buf)
+			if r == 0 {
+				user.UserOffline()
+				return
+			}
+			if err != nil && err != io.EOF {
+				fmt.Println(err)
+			}
+			msg := string(buf)
+			user.DoMessage(msg)
+		}
+	}()
 }
 func (this *Server) BroadCast(user *User, msg string) {
 	sendMsg := "[" + user.Addr + "]" + user.Name + ":" + msg
