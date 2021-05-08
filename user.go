@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"strings"
 )
@@ -46,7 +45,6 @@ func (this *User) UserOffline() {
 
 // DoMessage 发送消息
 func (this *User) DoMessage(msg string) {
-	fmt.Println(msg)
 	if msg == "who" {
 		this.Server.MapLock.Lock()
 		userMsg := "当前在线用户："
@@ -55,6 +53,19 @@ func (this *User) DoMessage(msg string) {
 		}
 		this.SendMsg(strings.Trim(userMsg, ",") + "\n")
 		this.Server.MapLock.Unlock()
+	} else if len(msg) > 7 && msg[:7] == "改名|" {
+		newName := msg[7:]
+		_, ok := this.Server.OnlineMap[newName]
+		if ok {
+			this.SendMsg("用户名已存在\n")
+		} else {
+			this.Server.MapLock.Lock()
+			delete(this.Server.OnlineMap, this.Name)
+			this.Name = newName
+			this.Server.OnlineMap[newName] = this
+			this.SendMsg("您的用户名已更新为：" + newName + "\n")
+			this.Server.MapLock.Unlock()
+		}
 	} else {
 		this.Server.BroadCast(this, msg+"\n")
 	}
