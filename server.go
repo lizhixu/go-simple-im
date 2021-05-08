@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -54,6 +55,7 @@ func (this *Server) Handler(conn net.Conn) {
 	user := NewUser(conn, this)
 	//推送上线消息
 	user.UserOnline()
+	isActivie := make(chan bool)
 	//接受客户端发送的消息
 	go func() {
 		buf := make([]byte, 4655)
@@ -68,13 +70,29 @@ func (this *Server) Handler(conn net.Conn) {
 			}
 			msg := string(buf[:r-1])
 			user.DoMessage(msg)
+			//设置活跃状态
+			isActivie <- true
 		}
 	}()
+	//当前handler阻塞
+	for {
+		select {
+		case <-isActivie:
+		case <-time.After(time.Second * 10):
+			user.SendMsg("会话超时已断开连接\n")
+			close(user.C)
+			conn.Close()
+			return//退出当前handler
+		}
+	}
 }
+
+// BroadCast 向所有用户推送消息
 func (this *Server) BroadCast(user *User, msg string) {
 	sendMsg := "[" + user.Addr + "]" + user.Name + ":" + msg
 	this.Message <- sendMsg
 }
+
 func (this *Server) ListenMessage() {
 	for {
 		msg := <-this.Message
