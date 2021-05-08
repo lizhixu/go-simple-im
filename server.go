@@ -66,7 +66,7 @@ func (this *Server) Handler(conn net.Conn) {
 			if err != nil && err != io.EOF {
 				fmt.Println(err)
 			}
-			msg := string(buf)
+			msg := string(buf[:r-1])
 			user.DoMessage(msg)
 		}
 	}()

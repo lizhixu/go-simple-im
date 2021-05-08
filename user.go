@@ -1,6 +1,10 @@
 package main
 
-import "net"
+import (
+	"fmt"
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name, Addr string
@@ -42,7 +46,23 @@ func (this *User) UserOffline() {
 
 // DoMessage 发送消息
 func (this *User) DoMessage(msg string) {
-	this.Server.BroadCast(this, msg)
+	fmt.Println(msg)
+	if msg == "who" {
+		this.Server.MapLock.Lock()
+		userMsg := "当前在线用户："
+		for _, user := range this.Server.OnlineMap {
+			userMsg += user.Name + ","
+		}
+		this.SendMsg(strings.Trim(userMsg, ",") + "\n")
+		this.Server.MapLock.Unlock()
+	} else {
+		this.Server.BroadCast(this, msg+"\n")
+	}
+}
+
+// SendMsg 给指定用户发送消息
+func (this *User) SendMsg(msg string) {
+	this.Conn.Write([]byte(msg))
 }
 func (this *User) ListenMessage() {
 	for {
