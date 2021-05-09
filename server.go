@@ -10,16 +10,16 @@ import (
 
 type Server struct {
 	Ip        string
-	Point     int
+	Port     int
 	OnlineMap map[string]*User
 	MapLock   sync.RWMutex
 	Message   chan string
 }
 
-func NewServer(ip string, point int) *Server {
+func NewServer(ip string, port int) *Server {
 	server := &Server{
 		Ip:        ip,
-		Point:     point,
+		Port:     port,
 		OnlineMap: make(map[string]*User),
 		Message:   make(chan string),
 	}
@@ -28,7 +28,7 @@ func NewServer(ip string, point int) *Server {
 
 func (this *Server) Start() {
 	//监听socket
-	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Ip, this.Point))
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Ip, this.Port))
 	if err != nil {
 		fmt.Println("监听失败", err)
 		return
