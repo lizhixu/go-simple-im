@@ -53,6 +53,20 @@ func (this *User) DoMessage(msg string) {
 		}
 		this.SendMsg(strings.Trim(userMsg, ",") + "\n")
 		this.Server.MapLock.Unlock()
+	} else if len(msg) > 1 && msg[:1] == "@" {
+		//私信
+		msgRes := strings.Split(msg, " ")
+		toUse, ok := this.Server.OnlineMap[msgRes[0][1:]]
+		if !ok {
+			this.Server.BroadCast(this, msg+"\n")
+		} else {
+			content := msgRes[1]
+			if content == "" {
+				this.Server.BroadCast(this, msg+"\n")
+			} else {
+				toUse.SendMsg(this.Name + "的私信：" + content + "\n")
+			}
+		}
 	} else if len(msg) > 7 && msg[:7] == "改名|" {
 		newName := msg[7:]
 		_, ok := this.Server.OnlineMap[newName]

@@ -78,7 +78,7 @@ func (this *Server) Handler(conn net.Conn) {
 	for {
 		select {
 		case <-isActivie:
-		case <-time.After(time.Second * 10):
+		case <-time.After(time.Minute * 10):
 			user.SendMsg("会话超时已断开连接\n")
 			close(user.C)
 			conn.Close()
