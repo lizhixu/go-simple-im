@@ -36,8 +36,11 @@ func NewClient(serverIp string, serverPort int) *Client {
 	client.Conn = conn
 	return client
 }
+func sendMenuTips() {
+	fmt.Println("请按照提示选择\n 1.公聊模式\n 2.私聊模式\n 3.修改用户名\n 0.退出")
+}
 
-//菜单
+//菜单选项
 func (this *Client) menu() bool {
 	var flag int
 	fmt.Scanln(&flag)
@@ -69,10 +72,10 @@ func (client *Client) Run() {
 		}
 		switch client.flag {
 		case 1:
-			fmt.Println("====公聊模式\n")
+			fmt.Println("====进入公聊模式，exit退出\n")
 			break
 		case 2:
-			fmt.Println("====私聊模式\n")
+			fmt.Println("====进入私聊模式，exit退出\n")
 			break
 		case 3:
 			fmt.Println("====请输入用户名\n")
@@ -92,11 +95,12 @@ func main() {
 	flag.Parse()
 	client := NewClient(serverIp, serverPort)
 	if client == nil {
+		fmt.Println("===服务器连接失败")
 		return
 	} else {
 		fmt.Println("===服务器连接成功")
+		sendMenuTips()
 		go client.ListenResponse()
-		fmt.Println("请按照提示选择\n 1.公聊模式\n 2.私聊模式\n 3.修改用户名\n 0.退出")
 	}
 	client.Run()
 }
