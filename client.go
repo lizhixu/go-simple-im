@@ -37,6 +37,7 @@ func NewClient(serverIp string, serverPort int) *Client {
 	client.Conn = conn
 	return client
 }
+
 func sendMenuTips() {
 	fmt.Println("请按照提示选择\n 1.公聊模式\n 2.私聊模式\n 3.修改用户名\n 0.退出")
 }
@@ -70,16 +71,39 @@ func (client *Client) renamed() bool {
 		fmt.Println("改名失败", err)
 		return false
 	}
+	fmt.Println("改名成功")
+	sendMenuTips()
 	return true
+}
+
+// PublicChar 公聊模式
+func (client *Client) PublicChar() {
+	var charMsg string
+	fmt.Scanln(&charMsg)
+	for charMsg != "exit" {
+		if charMsg != "" {
+			sendMsg := charMsg + "\n"
+			_, err := client.Conn.Write([]byte(sendMsg))
+			if err != nil {
+				fmt.Println("消息发送失败", err)
+				break
+			}
+			charMsg = ""
+			fmt.Scanln(&charMsg)
+		}
+	}
+	sendMenuTips()
 }
 
 func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
+
 		}
 		switch client.flag {
 		case 1:
 			fmt.Println("====进入公聊模式，exit退出\n")
+			client.PublicChar()
 			break
 		case 2:
 			fmt.Println("====进入私聊模式，exit退出\n")
