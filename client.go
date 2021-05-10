@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strconv"
 )
 
 type Client struct {
@@ -42,8 +43,14 @@ func sendMenuTips() {
 
 //菜单选项
 func (this *Client) menu() bool {
-	var flag int
-	fmt.Scanln(&flag)
+	//输入字符串退出的情况
+	var flagTmp string
+	fmt.Scanln(&flagTmp)
+	flag, err := strconv.Atoi(flagTmp)
+	if err != nil {
+		fmt.Println("输入不合法请重新输入", err, "\n")
+		return false
+	}
 
 	if flag >= 0 && flag < 4 {
 		this.flag = flag
