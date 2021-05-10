@@ -49,7 +49,7 @@ func (this *Client) menu() bool {
 	fmt.Scanln(&flagTmp)
 	flag, err := strconv.Atoi(flagTmp)
 	if err != nil {
-		fmt.Println("输入不合法请重新输入", err, "\n")
+		sendMenuTips()
 		return false
 	}
 
@@ -57,7 +57,7 @@ func (this *Client) menu() bool {
 		this.flag = flag
 		return true
 	} else {
-		fmt.Println("输入不合法请重新输入\n")
+		sendMenuTips()
 		return false
 	}
 }
@@ -71,13 +71,12 @@ func (client *Client) renamed() bool {
 		fmt.Println("改名失败", err)
 		return false
 	}
-	fmt.Println("改名成功")
-	sendMenuTips()
+	fmt.Println("====改名成功，请按照菜单继续操作")
 	return true
 }
 
-// PublicChar 公聊模式
-func (client *Client) PublicChar() {
+// PublicChat PublicChar 公聊模式
+func (client *Client) PublicChat() {
 	var charMsg string
 	fmt.Scanln(&charMsg)
 	for charMsg != "exit" {
@@ -95,6 +94,40 @@ func (client *Client) PublicChar() {
 	sendMenuTips()
 }
 
+//查询当前在线用户
+func (client *Client) selectUser() {
+	sendMsg := "who\n"
+	_, err := client.Conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("当前用户查询失败", err)
+	}
+}
+
+// PriviteChat 私聊消息
+func (client Client) PriviteChat() {
+	fmt.Println("====请输入对方用户名，exit退出")
+	var otherName string
+	fmt.Scanln(&otherName)
+	for otherName != "exit" {
+		fmt.Println("====私聊会话已接通，exit退出")
+		var charMsg string
+		fmt.Scanln(&charMsg)
+		for charMsg != "exit" {
+			if charMsg != "" {
+				sendMsg := "@" + otherName + " " + charMsg + "\n"
+				_, err := client.Conn.Write([]byte(sendMsg))
+				if err != nil {
+					fmt.Println("消息发送失败", err)
+					break
+				}
+				charMsg = ""
+				fmt.Scanln(&charMsg)
+			}
+		}
+	}
+}
+
+// Run 运行菜单
 func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
@@ -103,10 +136,13 @@ func (client *Client) Run() {
 		switch client.flag {
 		case 1:
 			fmt.Println("====进入公聊模式，exit退出\n")
-			client.PublicChar()
+			client.PublicChat()
 			break
 		case 2:
-			fmt.Println("====进入私聊模式，exit退出\n")
+			fmt.Println("====进入私聊模式\n")
+			//展示当前用户
+			client.selectUser()
+			client.PriviteChat()
 			break
 		case 3:
 			fmt.Println("====请输入用户名\n")
