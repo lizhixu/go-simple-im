@@ -71,7 +71,6 @@ func (client *Client) renamed() bool {
 		fmt.Println("改名失败", err)
 		return false
 	}
-	fmt.Println("====改名成功，请按照菜单继续操作")
 	return true
 }
 
@@ -147,6 +146,7 @@ func (client *Client) Run() {
 		case 3:
 			fmt.Println("====请输入用户名\n")
 			client.renamed()
+			fmt.Println("====改名成功，请按照菜单继续操作")
 			break
 		}
 	}
@@ -166,8 +166,10 @@ func main() {
 		return
 	} else {
 		fmt.Println("===服务器连接成功")
-		sendMenuTips()
 		go client.ListenResponse()
+		fmt.Println("=====请先输入一个中意昵称")
+		client.renamed()
+		sendMenuTips()
 	}
 	client.Run()
 }
